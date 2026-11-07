@@ -23,14 +23,17 @@ import {
   Search,
   Check,
   UserCheck,
+  UserX,
 } from 'lucide-react';
 
 export interface AssignedRoleCard {
-  userId?: string;
+  userId?: string | null;
   roleSlug: string;
   roleName: string;
   description?: string;
   isSystemRole?: boolean;
+  status: 'Assigned' | 'Unassigned';
+  isAssigned: boolean;
   assignedUser?: {
     id?: string;
     name: string;
@@ -38,36 +41,24 @@ export interface AssignedRoleCard {
     tenantSlug?: string;
     tenantName?: string;
     department?: string;
-  };
+  } | null;
   defaultPassword?: string;
 }
 
-// Fallback roles based strictly on manually added users
-const DEFAULT_FALLBACK_ROLES: AssignedRoleCard[] = [
-  {
-    roleSlug: 'super-admin',
-    roleName: 'Platform Super Administrator',
-    description: 'Global system governance & platform management',
-    isSystemRole: true,
-    assignedUser: {
-      name: 'Ankit Yadav',
-      email: 'ajaysuman5160@gmail.com',
-      tenantSlug: 'shoes',
-      tenantName: 'nike (shoes)',
-      department: 'Platform Governance',
-    },
-    defaultPassword: 'Password123!',
-  },
+// Initial fallback strictly for Nike (@shoes)
+const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
   {
     roleSlug: 'tenant-admin',
     roleName: 'Tenant Administrator',
-    description: 'Full organizational authority & user management',
+    description: 'Full organizational authority over users, roles & settings',
     isSystemRole: true,
+    status: 'Assigned',
+    isAssigned: true,
     assignedUser: {
       name: 'Ajay sharma',
       email: 'ajaykumarsharma.it27@gmail.com',
       tenantSlug: 'shoes',
-      tenantName: 'nike (shoes)',
+      tenantName: 'nike',
       department: 'Executive Management',
     },
     defaultPassword: 'Password123!',
@@ -75,13 +66,15 @@ const DEFAULT_FALLBACK_ROLES: AssignedRoleCard[] = [
   {
     roleSlug: 'purchase-officer',
     roleName: 'Purchase Officer',
-    description: 'Procurement execution, RFQs, POs & GRNs',
+    description: 'Procurement execution, RFQs, purchase orders & vendor receipts',
     isSystemRole: true,
+    status: 'Assigned',
+    isAssigned: true,
     assignedUser: {
       name: 'Suraj Choudhry',
       email: 'ajaykumarsharma.it25@gmail.com',
       tenantSlug: 'shoes',
-      tenantName: 'nike (shoes)',
+      tenantName: 'nike',
       department: 'Procurement',
     },
     defaultPassword: 'Password123!',
@@ -89,114 +82,84 @@ const DEFAULT_FALLBACK_ROLES: AssignedRoleCard[] = [
   {
     roleSlug: 'qc-inspector',
     roleName: 'QC Inspector',
-    description: 'Material inspection checklists & QA sign-offs',
+    description: 'Quality checklists, incoming shipment inspections & QA sign-offs',
     isSystemRole: true,
+    status: 'Assigned',
+    isAssigned: true,
     assignedUser: {
       name: 'Ankit Yadav',
       email: 'ajaysuman51601@gmail.com',
       tenantSlug: 'shoes',
-      tenantName: 'nike (shoes)',
+      tenantName: 'nike',
       department: 'Quality Assurance',
     },
     defaultPassword: 'Password123!',
   },
   {
-    roleSlug: 'tenant-admin',
-    roleName: 'Tenant Administrator',
-    description: 'Full organizational authority & user management',
+    roleSlug: 'super-admin',
+    roleName: 'Platform Super Administrator',
+    description: 'Global system governance & platform management',
     isSystemRole: true,
+    status: 'Assigned',
+    isAssigned: true,
     assignedUser: {
-      name: 'Arjun Sharma',
+      name: 'Ankit Yadav',
       email: 'ajaysuman5160@gmail.com',
-      tenantSlug: 'arjun-steels',
-      tenantName: 'Arjun Steels',
-      department: 'Executive Management',
+      tenantSlug: 'shoes',
+      tenantName: 'nike',
+      department: 'Platform Governance',
     },
     defaultPassword: 'Password123!',
   },
   {
-    roleSlug: 'tenant-admin',
-    roleName: 'Tenant Administrator',
-    description: 'Full organizational authority & user management',
+    roleSlug: 'operations-manager',
+    roleName: 'Operations Manager',
+    description: 'Cross-functional operational oversight of inventory & procurement',
     isSystemRole: true,
-    assignedUser: {
-      name: 'Suamn Sharma',
-      email: 'ajaysuman51603@gmail.com',
-      tenantSlug: 'suman-steels',
-      tenantName: 'Suman Steels',
-      department: 'Executive Management',
-    },
-    defaultPassword: 'Password123!',
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+  },
+  {
+    roleSlug: 'warehouse-clerk',
+    roleName: 'Warehouse Clerk',
+    description: 'Store operations, inventory adjustments & bin transfers',
+    isSystemRole: true,
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+  },
+  {
+    roleSlug: 'sales-representative',
+    roleName: 'Sales Representative',
+    description: 'Customer quotations, sales orders & dispatch tracking',
+    isSystemRole: true,
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+  },
+  {
+    roleSlug: 'production-supervisor',
+    roleName: 'Production Supervisor',
+    description: 'Work orders, BOM tracking & batch logging',
+    isSystemRole: true,
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
   },
   {
     roleSlug: 'auditor',
     roleName: 'Compliance Auditor',
-    description: 'Audit trail analysis & compliance reporting',
+    description: 'Audit trail analysis & compliance governance reporting',
     isSystemRole: true,
-    assignedUser: {
-      name: 'Ajay',
-      email: 'ajaykumarsharam.it26@gmail.com',
-      tenantSlug: 'suman-steels',
-      tenantName: 'Suman Steels',
-      department: 'Internal Audit & Governance',
-    },
-    defaultPassword: 'Password123!',
-  },
-  {
-    roleSlug: 'tenant-admin',
-    roleName: 'Tenant Administrator',
-    description: 'Full organizational authority & user management',
-    isSystemRole: true,
-    assignedUser: {
-      name: 'Aman Verma',
-      email: 'amanverma.t@gmail.com',
-      tenantSlug: 'aman-steels',
-      tenantName: 'Aman Steels',
-      department: 'Executive Management',
-    },
-    defaultPassword: 'Password123!',
-  },
-  {
-    roleSlug: 'auditor',
-    roleName: 'Compliance Auditor',
-    description: 'Audit trail analysis & compliance reporting',
-    isSystemRole: true,
-    assignedUser: {
-      name: 'Aman Verma',
-      email: 'amanverma23@gmail.com',
-      tenantSlug: 'aman-steels',
-      tenantName: 'Aman Steels',
-      department: 'Internal Audit & Governance',
-    },
-    defaultPassword: 'Password123!',
-  },
-  {
-    roleSlug: 'tenant-admin',
-    roleName: 'Tenant Administrator',
-    description: 'Full organizational authority & user management',
-    isSystemRole: true,
-    assignedUser: {
-      name: 'Admin',
-      email: 'admin@skechers.com',
-      tenantSlug: 'skechers',
-      tenantName: 'Skechers',
-      department: 'Executive Management',
-    },
-    defaultPassword: 'Password123!',
-  },
-  {
-    roleSlug: 'qc-inspector',
-    roleName: 'QC Inspector',
-    description: 'Material inspection checklists & QA sign-offs',
-    isSystemRole: true,
-    assignedUser: {
-      name: 'Vayne',
-      email: 'vayne@skechers.com',
-      tenantSlug: 'skechers',
-      tenantName: 'Skechers',
-      department: 'Quality Assurance',
-    },
-    defaultPassword: 'Password123!',
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
   },
 ];
 
@@ -225,31 +188,6 @@ const getRoleIcon = (slug: string) => {
   }
 };
 
-const getRoleBadgeStyle = (slug: string) => {
-  switch (slug) {
-    case 'super-admin':
-      return 'bg-purple-500/10 text-purple-300 border-purple-500/30';
-    case 'tenant-admin':
-      return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
-    case 'operations-manager':
-      return 'bg-blue-500/10 text-blue-300 border-blue-500/30';
-    case 'purchase-officer':
-      return 'bg-amber-500/10 text-amber-300 border-amber-500/30';
-    case 'warehouse-clerk':
-      return 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30';
-    case 'sales-representative':
-      return 'bg-rose-500/10 text-rose-300 border-rose-500/30';
-    case 'production-supervisor':
-      return 'bg-orange-500/10 text-orange-300 border-orange-500/30';
-    case 'qc-inspector':
-      return 'bg-teal-500/10 text-teal-300 border-teal-500/30';
-    case 'auditor':
-      return 'bg-slate-700/40 text-slate-300 border-slate-600/40';
-    default:
-      return 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30';
-  }
-};
-
 export const Login: React.FC = () => {
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -257,8 +195,8 @@ export const Login: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [tenantSlug, setTenantSlug] = useState('');
-  const [lastTenantName, setLastTenantName] = useState('');
+  const [tenantSlug, setTenantSlug] = useState('shoes');
+  const [lastTenantName, setLastTenantName] = useState('nike');
   const [rememberMe, setRememberMe] = useState(false);
 
   // Field-level inline errors
@@ -269,16 +207,16 @@ export const Login: React.FC = () => {
   const [successBanner, setSuccessBanner] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Dynamic roles management
-  const [roles, setRoles] = useState<AssignedRoleCard[]>(DEFAULT_FALLBACK_ROLES);
+  // Dynamic roles management for Nike
+  const [roles, setRoles] = useState<AssignedRoleCard[]>(INITIAL_NIKE_ROLES);
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [roleSearch, setRoleSearch] = useState('');
-  const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'assigned' | 'unassigned'>('all');
+  const [selectedRoleSlug, setSelectedRoleSlug] = useState<string | null>(null);
   const [selectedRoleNotification, setSelectedRoleNotification] = useState<string | null>(null);
 
+  // Dynamic fetch from API
   const fetchAssignedRoles = useCallback(async () => {
-    setIsLoadingRoles(true);
     try {
       const res = await authApi.getAssignedRoles();
       const serverRoles = res.data || res;
@@ -286,14 +224,35 @@ export const Login: React.FC = () => {
         setRoles(serverRoles);
       }
     } catch {
-      // Graceful fallback
+      // Graceful fallback to initial state
     } finally {
       setIsLoadingRoles(false);
     }
   }, []);
 
+  // Initial fetch and real-time polling every 3 seconds + window focus listener
   useEffect(() => {
+    setIsLoadingRoles(true);
     fetchAssignedRoles();
+
+    // Real-time polling every 3000ms
+    const interval = setInterval(() => {
+      fetchAssignedRoles();
+    }, 3000);
+
+    // Refresh immediately on window focus (e.g. when returning from User Management tab)
+    const handleFocus = () => {
+      fetchAssignedRoles();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('storage', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleFocus);
+    };
   }, [fetchAssignedRoles]);
 
   useEffect(() => {
@@ -306,27 +265,39 @@ export const Login: React.FC = () => {
     }
   }, [isAuthenticated, navigate, location]);
 
-  const handleSelectRole = (card: AssignedRoleCard, uniqueKey: string) => {
-    const userEmail = card.assignedUser?.email || '';
-    const userPassword = card.defaultPassword || 'Password123!';
-    const userSlug = card.assignedUser?.tenantSlug || '';
-    const userTenantName = card.assignedUser?.tenantName || '';
+  const handleSelectRole = (card: AssignedRoleCard) => {
+    setSelectedRoleSlug(card.roleSlug);
 
-    setEmail(userEmail);
-    setPassword(userPassword);
-    setTenantSlug(userSlug);
-    setLastTenantName(userTenantName);
-    setSelectedCardId(uniqueKey);
+    if (card.isAssigned && card.assignedUser) {
+      const userEmail = card.assignedUser.email || '';
+      const userPassword = card.defaultPassword || 'Password123!';
+      const userSlug = card.assignedUser.tenantSlug || 'shoes';
+      const userTenantName = card.assignedUser.tenantName || 'nike';
 
-    // Clear previous errors
-    setEmailError('');
-    setPasswordError('');
-    setTenantError('');
-    setFormError('');
+      setEmail(userEmail);
+      setPassword(userPassword);
+      setTenantSlug(userSlug);
+      setLastTenantName(userTenantName);
 
-    setSelectedRoleNotification(
-      `Selected ${card.roleName}: ${card.assignedUser?.name} (${userEmail})`
-    );
+      setEmailError('');
+      setPasswordError('');
+      setTenantError('');
+      setFormError('');
+
+      setSelectedRoleNotification(
+        `Selected ${card.roleName}: ${card.assignedUser.name} (${userEmail}) — Credentials filled`
+      );
+    } else {
+      // Unassigned role clicked
+      setEmail('');
+      setPassword('');
+      setTenantSlug('shoes');
+      setLastTenantName('nike');
+
+      setSelectedRoleNotification(
+        `Note: Role "${card.roleName}" is currently Unassigned in Nike. Assign a user in User Management to enable login.`
+      );
+    }
   };
 
   const validateForm = (): boolean => {
@@ -395,7 +366,7 @@ export const Login: React.FC = () => {
       await login({
         email: email.trim().toLowerCase(),
         password,
-        tenantSlug: tenantSlug.trim().toLowerCase() || undefined,
+        tenantSlug: tenantSlug.trim().toLowerCase() || 'shoes',
         rememberMe,
       });
       navigate('/dashboard');
@@ -407,26 +378,16 @@ export const Login: React.FC = () => {
     }
   };
 
-  // Distinct workspaces for filtering
-  const distinctWorkspaces = useMemo(() => {
-    const map = new Map<string, string>();
-    roles.forEach((r) => {
-      const slug = r.assignedUser?.tenantSlug;
-      const name = r.assignedUser?.tenantName;
-      if (slug && name) {
-        map.set(slug, name);
-      }
-    });
-    return Array.from(map.entries()).map(([slug, name]) => ({ slug, name }));
-  }, [roles]);
+  // Stats calculation
+  const assignedCount = useMemo(() => roles.filter((r) => r.isAssigned).length, [roles]);
+  const unassignedCount = useMemo(() => roles.filter((r) => !r.isAssigned).length, [roles]);
 
+  // Filtering roles by search and status
   const filteredRoles = useMemo(() => {
     return roles.filter((r) => {
-      // Workspace filter
-      if (selectedWorkspace !== 'all') {
-        const slug = r.assignedUser?.tenantSlug || '';
-        if (slug !== selectedWorkspace) return false;
-      }
+      // Status filter
+      if (statusFilter === 'assigned' && !r.isAssigned) return false;
+      if (statusFilter === 'unassigned' && r.isAssigned) return false;
 
       // Search query
       const query = roleSearch.toLowerCase();
@@ -435,13 +396,11 @@ export const Login: React.FC = () => {
       const roleMatch = r.roleName.toLowerCase().includes(query) || r.roleSlug.toLowerCase().includes(query);
       const userMatch =
         (r.assignedUser?.name || '').toLowerCase().includes(query) ||
-        (r.assignedUser?.email || '').toLowerCase().includes(query) ||
-        (r.assignedUser?.tenantSlug || '').toLowerCase().includes(query) ||
-        (r.assignedUser?.tenantName || '').toLowerCase().includes(query);
+        (r.assignedUser?.email || '').toLowerCase().includes(query);
 
       return roleMatch || userMatch;
     });
-  }, [roles, selectedWorkspace, roleSearch]);
+  }, [roles, statusFilter, roleSearch]);
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -458,15 +417,15 @@ export const Login: React.FC = () => {
           STOCKPILOT
         </h2>
         <p className="mt-1 text-xs text-emerald-400 font-mono font-medium tracking-wide uppercase">
-          Multi-Tenant Inventory & Operations Platform
+          Multi-Tenant Inventory &amp; Operations Platform
         </p>
       </div>
 
-      {/* Main Container: Split Grid for Roles & Login Form */}
+      {/* Main Container: Split Grid for Nike Roles & Login Form */}
       <div className="w-full max-w-6xl mx-auto z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* LEFT COLUMN: Role Switcher / Quick Login Cards */}
+          {/* LEFT COLUMN: Nike Role Management UI */}
           <div className="lg:col-span-7 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-2xl p-5 sm:p-6 flex flex-col">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
               <div>
@@ -475,95 +434,133 @@ export const Login: React.FC = () => {
                     <Sparkles className="w-4 h-4" />
                   </span>
                   <h3 className="text-base font-semibold text-white">
-                    Assigned Roles & Accounts
+                    Nike Assigned Roles &amp; Accounts
                   </h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-slate-800 border border-slate-700 text-emerald-400 font-medium">
+                    @shoes
+                  </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Click any role to auto-fill its email &amp; credentials
+                  Real-time role status for Nike company — Click to auto-fill credentials
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={fetchAssignedRoles}
+                onClick={() => {
+                  setIsLoadingRoles(true);
+                  fetchAssignedRoles();
+                }}
                 disabled={isLoadingRoles}
                 className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition-colors px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 self-start sm:self-auto"
-                title="Refresh roles from database"
+                title="Refresh latest role assignments from database"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoadingRoles ? 'animate-spin text-emerald-400' : ''}`} />
                 <span>{isLoadingRoles ? 'Updating...' : 'Refresh Roles'}</span>
               </button>
             </div>
 
-            {/* Workspace Filter Pills */}
-            {distinctWorkspaces.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-thin">
+            {/* Filter Tabs & Real-Time Status Count */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setSelectedWorkspace('all')}
-                  className={`text-[11px] px-2.5 py-1 rounded-lg border whitespace-nowrap transition-colors ${
-                    selectedWorkspace === 'all'
+                  onClick={() => setStatusFilter('all')}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
+                    statusFilter === 'all'
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-medium'
                       : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
                   }`}
                 >
-                  All ({roles.length})
+                  All Roles ({roles.length})
                 </button>
-                {distinctWorkspaces.map((ws) => (
-                  <button
-                    key={ws.slug}
-                    type="button"
-                    onClick={() => setSelectedWorkspace(ws.slug)}
-                    className={`text-[11px] px-2.5 py-1 rounded-lg border whitespace-nowrap transition-colors ${
-                      selectedWorkspace === ws.slug
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-medium'
-                        : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
-                    }`}
-                  >
-                    {ws.name}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('assigned')}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
+                    statusFilter === 'assigned'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-medium'
+                      : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  Assigned ({assignedCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('unassigned')}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
+                    statusFilter === 'unassigned'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-medium'
+                      : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  Unassigned ({unassignedCount})
+                </button>
               </div>
-            )}
+
+              <div className="text-[11px] text-slate-500 font-mono">
+                Real-time sync active
+              </div>
+            </div>
 
             {/* Quick search input */}
-            <div className="relative mb-4">
+            <div className="relative mb-3">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
               <input
                 type="text"
                 value={roleSearch}
                 onChange={(e) => setRoleSearch(e.target.value)}
-                placeholder="Search by role, user name, or email..."
+                placeholder="Search Nike roles or user names..."
                 className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-950/70 border border-slate-800 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
 
-            {/* Role Cards List */}
+            {/* Nike Roles Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[460px] overflow-y-auto pr-1 focus:outline-none">
-              {filteredRoles.map((card, idx) => {
-                const uniqueKey = `${card.roleSlug}-${card.assignedUser?.email}-${card.assignedUser?.tenantSlug || idx}`;
-                const isSelected = selectedCardId === uniqueKey;
+              {filteredRoles.map((card) => {
+                const isSelected = selectedRoleSlug === card.roleSlug;
+                const isAssigned = card.isAssigned && Boolean(card.assignedUser);
                 const assigned = card.assignedUser;
 
                 return (
                   <button
-                    key={uniqueKey}
+                    key={card.roleSlug}
                     type="button"
-                    onClick={() => handleSelectRole(card, uniqueKey)}
+                    onClick={() => handleSelectRole(card)}
                     className={`text-left p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between group relative ${
                       isSelected
-                        ? 'bg-emerald-950/40 border-emerald-500 shadow-md shadow-emerald-950/30 ring-1 ring-emerald-500/40'
-                        : 'bg-slate-950/50 hover:bg-slate-800/70 border-slate-800/80 hover:border-slate-700'
+                        ? isAssigned
+                          ? 'bg-emerald-950/40 border-emerald-500 shadow-md shadow-emerald-950/30 ring-1 ring-emerald-500/40'
+                          : 'bg-amber-950/30 border-amber-500/60 shadow-md ring-1 ring-amber-500/40'
+                        : isAssigned
+                        ? 'bg-slate-950/60 hover:bg-slate-800/70 border-slate-800/90 hover:border-slate-700'
+                        : 'bg-slate-950/30 hover:bg-slate-900/50 border-dashed border-slate-800/80 hover:border-slate-700 opacity-85'
                     }`}
                   >
-                    {/* Top Row: Role Name & Badge */}
+                    {/* Top Row: Role Name, Icon & Status Badge */}
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 group-hover:scale-105 transition-transform shrink-0">
-                          {getRoleIcon(card.roleSlug)}
+                        <div
+                          className={`p-1.5 rounded-lg border group-hover:scale-105 transition-transform shrink-0 ${
+                            isAssigned
+                              ? 'bg-slate-900 border-slate-800'
+                              : 'bg-slate-900/60 border-slate-800/60'
+                          }`}
+                        >
+                          {isAssigned ? (
+                            getRoleIcon(card.roleSlug)
+                          ) : (
+                            <UserX className="w-4 h-4 text-amber-400/80" />
+                          )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-xs font-semibold text-white group-hover:text-emerald-300 transition-colors truncate">
+                          <div
+                            className={`text-xs font-semibold transition-colors truncate ${
+                              isAssigned
+                                ? 'text-white group-hover:text-emerald-300'
+                                : 'text-slate-300 group-hover:text-amber-200'
+                            }`}
+                          >
                             {card.roleName}
                           </div>
                           {card.description && (
@@ -574,36 +571,52 @@ export const Login: React.FC = () => {
                         </div>
                       </div>
 
-                      {isSelected ? (
-                        <span className="p-1 rounded-full bg-emerald-500/20 text-emerald-400 shrink-0">
-                          <Check className="w-3 h-3" />
-                        </span>
-                      ) : (
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded-md border font-mono font-medium shrink-0 ${getRoleBadgeStyle(
-                            card.roleSlug
-                          )}`}
-                        >
-                          {card.isSystemRole ? 'SYSTEM' : 'TENANT'}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Status Badge */}
+                        {isAssigned ? (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            Assigned
+                          </span>
+                        ) : (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            Unassigned
+                          </span>
+                        )}
+
+                        {isSelected && isAssigned && (
+                          <span className="p-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                            <Check className="w-3 h-3" />
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Bottom Row: Assigned User Name & Email */}
                     <div className="pt-2 border-t border-slate-800/60 mt-1">
-                      <div className="flex items-center justify-between text-[11px] gap-1">
-                        <span className="text-slate-200 font-medium truncate">
-                          {assigned?.name || 'Assigned User'}
-                        </span>
-                        {assigned?.tenantSlug && (
-                          <span className="text-[10px] text-emerald-400 font-mono truncate">
-                            @{assigned.tenantSlug}
+                      {isAssigned && assigned ? (
+                        <>
+                          <div className="flex items-center justify-between text-[11px] gap-1">
+                            <span className="text-white font-medium truncate">
+                              {assigned.name}
+                            </span>
+                            <span className="text-[10px] text-emerald-400 font-mono truncate">
+                              @shoes
+                            </span>
+                          </div>
+                          <div className="text-[11px] font-mono text-emerald-400/90 truncate mt-0.5">
+                            {assigned.email}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between text-[11px] py-0.5">
+                          <span className="text-amber-400 font-medium">
+                            Unassigned
                           </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-400 truncate mt-0.5">
-                        {assigned?.email || 'No email assigned'}
-                      </div>
+                          <span className="text-slate-500 text-[10px]">
+                            No user assigned yet
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </button>
                 );
@@ -617,7 +630,7 @@ export const Login: React.FC = () => {
             </div>
 
             <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>💡 When you assign a new user or role in the system, it automatically updates here.</span>
+              <span>💡 When you assign a role to a user in Nike, it updates here immediately in real time.</span>
             </div>
           </div>
 
@@ -627,13 +640,23 @@ export const Login: React.FC = () => {
               Sign In to StockPilot
             </h3>
             <p className="text-xs text-slate-400 mb-5">
-              Enter credentials or select a role from the left panel.
+              Enter credentials or select an assigned role from the Nike panel.
             </p>
 
             {/* Selection Notification Banner */}
             {selectedRoleNotification && (
-              <div className="mb-4 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+              <div
+                className={`mb-4 p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
+                  selectedRoleNotification.includes('Unassigned')
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                }`}
+              >
+                {selectedRoleNotification.includes('Unassigned') ? (
+                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                )}
                 <span className="truncate">{selectedRoleNotification}</span>
               </div>
             )}
@@ -699,21 +722,19 @@ export const Login: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setTenantSlug('');
-                      setLastTenantName('');
-                      localStorage.removeItem('sp_last_tenant_slug');
-                      localStorage.removeItem('sp_last_tenant_name');
+                      setTenantSlug('shoes');
+                      setLastTenantName('nike');
                     }}
-                    className="text-[11px] text-slate-400 hover:text-rose-400 underline ml-2 shrink-0 transition-colors"
+                    className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium ml-2 shrink-0 transition-colors"
                   >
-                    Change
+                    Reset
                   </button>
                 </div>
               )}
 
               <div>
                 <Input
-                  label="Organization Slug (Optional)"
+                  label="Organization Slug"
                   type="text"
                   value={tenantSlug}
                   onChange={(e) => {
@@ -721,8 +742,8 @@ export const Login: React.FC = () => {
                     if (tenantError) setTenantError('');
                   }}
                   error={tenantError}
-                  placeholder="Auto-detected from email"
-                  helperText="Leave blank to auto-detect from your email"
+                  placeholder="shoes"
+                  helperText="Default workspace: shoes (Nike)"
                   leftIcon={<Building2 className="w-4 h-4" />}
                 />
               </div>
