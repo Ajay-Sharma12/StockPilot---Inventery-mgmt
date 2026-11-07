@@ -437,6 +437,8 @@ export class AuthController {
         }
       }
 
+      const COMMON_DEFAULT_PASSWORD = process.env.DEFAULT_USER_PASSWORD || 'Password123!';
+
       // Check assignment for each role in Nike
       const roleCards: any[] = [];
 
@@ -472,7 +474,12 @@ export class AuthController {
               tenantName: tenantName,
               department: assignedUserDoc.accessScope?.department,
             },
-            defaultPassword: 'Password123!',
+            defaultPassword: COMMON_DEFAULT_PASSWORD,
+            credentials: {
+              email: assignedUserDoc.email,
+              password: COMMON_DEFAULT_PASSWORD,
+              tenantSlug: tenantSlug,
+            },
             priority: standardRoleOrder[slug] ?? 50,
           });
         } else {
@@ -487,6 +494,7 @@ export class AuthController {
             isAssigned: false,
             assignedUser: null,
             defaultPassword: '',
+            credentials: null,
             priority: standardRoleOrder[slug] ?? 50,
           });
         }

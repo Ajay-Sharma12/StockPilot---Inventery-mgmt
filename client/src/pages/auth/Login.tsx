@@ -43,73 +43,58 @@ export interface AssignedRoleCard {
     department?: string;
   } | null;
   defaultPassword?: string;
+  credentials?: {
+    email: string;
+    password: string;
+    tenantSlug: string;
+  } | null;
 }
 
-// Initial fallback strictly for Nike (@shoes)
+// Initial placeholder roles without hardcoded user credentials (dynamically fetched from DB/API)
 const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
   {
     roleSlug: 'tenant-admin',
     roleName: 'Tenant Administrator',
     description: 'Full organizational authority over users, roles & settings',
     isSystemRole: true,
-    status: 'Assigned',
-    isAssigned: true,
-    assignedUser: {
-      name: 'Ajay sharma',
-      email: 'ajaykumarsharma.it27@gmail.com',
-      tenantSlug: 'shoes',
-      tenantName: 'nike',
-      department: 'Executive Management',
-    },
-    defaultPassword: 'Password123!',
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'purchase-officer',
     roleName: 'Purchase Officer',
     description: 'Procurement execution, RFQs, purchase orders & vendor receipts',
     isSystemRole: true,
-    status: 'Assigned',
-    isAssigned: true,
-    assignedUser: {
-      name: 'Suraj Choudhry',
-      email: 'ajaykumarsharma.it25@gmail.com',
-      tenantSlug: 'shoes',
-      tenantName: 'nike',
-      department: 'Procurement',
-    },
-    defaultPassword: 'Password123!',
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'qc-inspector',
     roleName: 'QC Inspector',
     description: 'Quality checklists, incoming shipment inspections & QA sign-offs',
     isSystemRole: true,
-    status: 'Assigned',
-    isAssigned: true,
-    assignedUser: {
-      name: 'Ankit Yadav',
-      email: 'ajaysuman51601@gmail.com',
-      tenantSlug: 'shoes',
-      tenantName: 'nike',
-      department: 'Quality Assurance',
-    },
-    defaultPassword: 'Password123!',
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'super-admin',
     roleName: 'Platform Super Administrator',
     description: 'Global system governance & platform management',
     isSystemRole: true,
-    status: 'Assigned',
-    isAssigned: true,
-    assignedUser: {
-      name: 'Ankit Yadav',
-      email: 'ajaysuman5160@gmail.com',
-      tenantSlug: 'shoes',
-      tenantName: 'nike',
-      department: 'Platform Governance',
-    },
-    defaultPassword: 'Password123!',
+    status: 'Unassigned',
+    isAssigned: false,
+    assignedUser: null,
+    defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'operations-manager',
@@ -120,6 +105,7 @@ const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
     isAssigned: false,
     assignedUser: null,
     defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'warehouse-clerk',
@@ -130,6 +116,7 @@ const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
     isAssigned: false,
     assignedUser: null,
     defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'sales-representative',
@@ -140,6 +127,7 @@ const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
     isAssigned: false,
     assignedUser: null,
     defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'production-supervisor',
@@ -150,6 +138,7 @@ const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
     isAssigned: false,
     assignedUser: null,
     defaultPassword: '',
+    credentials: null,
   },
   {
     roleSlug: 'auditor',
@@ -160,6 +149,7 @@ const INITIAL_NIKE_ROLES: AssignedRoleCard[] = [
     isAssigned: false,
     assignedUser: null,
     defaultPassword: '',
+    credentials: null,
   },
 ];
 
@@ -268,11 +258,12 @@ export const Login: React.FC = () => {
   const handleSelectRole = (card: AssignedRoleCard) => {
     setSelectedRoleSlug(card.roleSlug);
 
-    if (card.isAssigned && card.assignedUser) {
-      const userEmail = card.assignedUser.email || '';
-      const userPassword = card.defaultPassword || 'Password123!';
-      const userSlug = card.assignedUser.tenantSlug || 'shoes';
-      const userTenantName = card.assignedUser.tenantName || 'nike';
+    if (card.isAssigned && (card.assignedUser || card.credentials)) {
+      // Credentials dynamically loaded from database/API
+      const userEmail = card.credentials?.email || card.assignedUser?.email || '';
+      const userPassword = card.credentials?.password || card.defaultPassword || '';
+      const userSlug = card.credentials?.tenantSlug || card.assignedUser?.tenantSlug || 'shoes';
+      const userTenantName = card.assignedUser?.tenantName || 'nike';
 
       setEmail(userEmail);
       setPassword(userPassword);
@@ -284,8 +275,9 @@ export const Login: React.FC = () => {
       setTenantError('');
       setFormError('');
 
+      const displayName = card.assignedUser?.name || card.roleName;
       setSelectedRoleNotification(
-        `Selected ${card.roleName}: ${card.assignedUser.name} (${userEmail}) — Credentials filled`
+        `Selected ${card.roleName}: ${displayName} (${userEmail}) — Credentials filled`
       );
     } else {
       // Unassigned role clicked
